@@ -5,10 +5,22 @@ const cors=require('cors');
 const app=express();
 app.use(express.json());
 app.use(cookieParser());
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://prepwise-git-main-shivamsiingh01-gmailcoms-projects.vercel.app",
+  "https://prepwise-nktzf0x26-shivamsiingh01-gmailcoms-projects.vercel.app"
+];
+
 app.use(cors({
-    origin:"true",
-    credentials:true
-}))
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
+}));
 //reeuire all the routes here
 const authRouter=require('./routes/auth.routes');
 const interviewRouter=require('./routes/interview.routes');
