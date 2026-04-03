@@ -143,9 +143,20 @@ const Interview = () => {
       setError(null);   // 🔴 clear previous error
 
       const html=await getResumePdf(interviewId);
-      const element=document.createElement("div");
-      element.innerHTML=html;
-      html2pdf().from(element).save("resume.pdf");   // 🔴 wait for completion
+      const container=document.createElement("div");
+      container.innerHTML=html;
+      document.body.appendChild(container);   // 🔴 required for html2pdf to work
+      await html2pdf()
+        .set({
+          margin:10,
+          filename:"resume.pdf",
+          html2canvas:{scale:2},
+          jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}
+        })
+        .from(container)
+        .save();
+        
+      document.body.removeChild(cont)// 🔴 wait for completion
 
     } catch (err) {
       console.error(err);
