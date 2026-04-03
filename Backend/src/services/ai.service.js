@@ -157,19 +157,29 @@ async function generateResumePdf({ resume, selfDescription, jobDescription }) {
     html: z.string()
   });
 
-  const prompt = `Generate a html resume for a candidate with the following details:
+  const prompt = `
+Return ONLY valid JSON:
+
+{
+  "html": "<!DOCTYPE html><html><head><style>
+    body { font-family: Arial; padding: 20px; line-height: 1.6; }
+    h1 { color: #222; }
+    h2 { border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+  </style></head><body>
+    <!-- FULL RESUME CONTENT -->
+  </body></html>"
+}
+
+STRICT RULES:
+- Must include <!DOCTYPE html>
+- Must include <html>, <head>, <body>
+- No markdown (no \`\`\`)
+- No explanation text
+- Must contain full resume content (not empty)
 
 Resume: ${resume}
 Self Description: ${selfDescription}
 Job Description: ${jobDescription}
-
-Return ONLY JSON:
-{
-  "html": "<html>...</html>"
-}
-
-Make it clean, professional, ATS-friendly, and concise .
-to fit within 2 pages when printed. Use standard resume sections like Summary, Experience, Education, Skills, etc. Do NOT include any explanations or extra text outside the JSON.
 `;
 
   const response = await ai.models.generateContent({
@@ -181,9 +191,33 @@ to fit within 2 pages when printed. Use standard resume sections like Summary, E
     }
   });
 
-  const jsonContent = JSON.parse(response.text);
+  console.log("RAW AI RESPONSE:", response.text);
 
-  return jsonContent.html; // ✅ ONLY HTML
+  let jsonContent;
+
+  try {
+    jsonContent = JSON.parse(response.text);
+  } catch (err) {
+    console.error("❌ JSON PARSE FAILED:", response.text);
+    throw new Error("Invalid AI response");
+  }
+
+  // 🔥 CLEAN HTML
+  let html = jsonContent.html
+    ?.replace(/```html/g, "")
+    .replace(/```/g, "")
+    .trim();
+
+  // 🔥 VALIDATE HTML (VERY IMPORTANT)
+  if (!html || html.length < 500) {
+    console.error("❌ BAD HTML:", html);
+    throw new Error("AI returned empty or invalid HTML");
+  }
+
+  console.log("FINAL HTML LENGTH:", html.length);
+  console.log("HTML PREVIEW:", html.slice(0, 200));
+
+  return html;
 }
 
 
