@@ -112,17 +112,21 @@ async function generateResumePdfController(req,res){
 
     const {resume,selfDescription,jobDescription}=interviewReport
 
-    const pdfBuffer=await generateResumePdf({resume,selfDescription,jobDescription})
+    const htmlContent=await generateResumePdf({
+        resume,
+        selfDescription,
+        jobDescription
+    });
 
-    res.set({
-        "Content-Type":"application/pdf",
-        "Content-Disposition":`attachment; filename=resume_${interviewReportId}.pdf`
-    })
-    res.send(pdfBuffer);
-    } catch(error){
-        console.log("PDF Generation Error:",error.message);
+    res.status(200).json({
+        html:htmlContent
+    });
+
+    }catch(error){
+        console.log("Resume HTML Error:",error.message);
+
         return res.status(500).json({
-            message:"Server is experiencing heavy load. Please try again later"
+            message:"Failed to generate resume"
         });
     }
 

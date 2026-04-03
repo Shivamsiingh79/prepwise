@@ -82,14 +82,10 @@ export const generateResumePdf = async (interviewReportId) => {
     try {   // 🔴 ADDED
 
         const response = await api.post(
-            `/api/interview/resume/pdf/${interviewReportId}`,
-            null,
-            {
-                responseType: "blob"
-            }
+            `/api/interview/resume/html/${interviewReportId}`,
         );
 
-        return response.data;
+        return response.data.html;
 
     } catch (err) {   // 🔴 ADDED
 

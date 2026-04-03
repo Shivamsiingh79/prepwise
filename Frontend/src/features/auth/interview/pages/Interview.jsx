@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import '../style/interview.scss'
 import { useInterview } from '../hooks/useInterview.js'
 import { useParams } from 'react-router' // ✅ FIXED (important)
+import html2pdf from 'html2pdf.js'   // 🔴 ADDED
 
 /* ── NAV ITEMS ───────────────────────── */
 const NAV_ITEMS = [
@@ -141,7 +142,10 @@ const Interview = () => {
     try {
       setError(null);   // 🔴 clear previous error
 
-      await getResumePdf(interviewId);   // 🔴 wait for completion
+      const html=await getResumePdf(interviewId);
+      const element=document.createElement("div");
+      element.innerHTML=html;
+      html2pdf().from(element).save("resume.pdf");   // 🔴 wait for completion
 
     } catch (err) {
       console.error(err);
