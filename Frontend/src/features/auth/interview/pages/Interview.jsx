@@ -156,7 +156,7 @@ const Interview = () => {
         .from(container)
         .save();
         
-      document.body.removeChild(cont)// 🔴 wait for completion
+      document.body.removeChild(container);   // 🔴 remove container after PDF generation
 
     } catch (err) {
       console.error(err);
