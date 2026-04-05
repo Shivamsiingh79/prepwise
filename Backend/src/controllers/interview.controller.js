@@ -5,16 +5,17 @@ async function generateInterviewReportController(req,res){
 
     
     try{
-
-       
-
     const {selfDescription,jobDescription}=req.body;
 
     let resumeText="";
     if(req.file && req.file.buffer){
-         const resumeContent=await (new pdfParse.PDFParse(Uint8Array.from(req.file.buffer))).getText();
-         resumeText=resumeContent.text;
+         const data=await pdfParse(req.file.buffer);
+         resumeText=data.text;
 
+         resumeText=resumeText
+            .replace(/\s+/g, '\n')
+            .replace(/\s+/g," ")
+            .trim();
     }
 
     if(!resumeText && !selfDescription){
@@ -111,6 +112,7 @@ async function generateResumePdfController(req,res){
     }
 
     const {resume,selfDescription,jobDescription}=interviewReport
+
 
     const htmlContent=await generateResumePdf({
         resume,

@@ -158,28 +158,50 @@ async function generateResumePdf({ resume, selfDescription, jobDescription }) {
   });
 
   const prompt = `
-Return ONLY valid JSON:
+You are a professional resume writer.
 
-{
-  "html": "<!DOCTYPE html><html><head><style>
-    body { font-family: Arial; padding: 20px; line-height: 1.6; }
-    h1 { color: #222; }
-    h2 { border-bottom: 1px solid #ccc; padding-bottom: 4px; }
-  </style></head><body>
-    <!-- FULL RESUME CONTENT -->
-  </body></html>"
-}
+Generate a HIGHLY PERSONALIZED HTML resume using the EXACT data provided.
 
 STRICT RULES:
-- Must include <!DOCTYPE html>
-- Must include <html>, <head>, <body>
-- No markdown (no \`\`\`)
-- No explanation text
-- Must contain full resume content (not empty)
+- Use REAL content from resume text
+- Extract and include:
+  - Projects (with description)
+  - Skills
+  - Experience
+  - Education
+  - Links (GitHub, portfolio if present)
+- DO NOT invent fake content
+- DO NOT generalize
+- DO NOT skip sections if data exists
+- If something is missing → omit section (don’t hallucinate)
 
-Resume: ${resume}
-Self Description: ${selfDescription}
-Job Description: ${jobDescription}
+STRUCTURE:
+- Name / Title
+- Summary (based on selfDescription)
+- Skills
+- Projects (VERY IMPORTANT)
+- Experience
+- Education
+- Links (if available)
+
+STYLE RULES:
+- Use clean HTML + inline CSS
+- Ensure proper spacing and margins
+- Avoid content getting cut in PDF
+
+Resume:
+${resume}
+
+Self Description:
+${selfDescription}
+
+Job Description:
+${jobDescription}
+
+Return ONLY:
+{
+  "html": "<html>...</html>"
+}
 `;
 
   const response = await ai.models.generateContent({

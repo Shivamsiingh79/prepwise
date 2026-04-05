@@ -143,15 +143,39 @@ const Interview = () => {
       setError(null);   // 🔴 clear previous error
 
       const html=await getResumePdf(interviewId);
+      if(!html) throw new Error("No HTML received");
+      const cleanHtml=html
+      .replace(/<!DOCTYPE.*?>/, "")
+      .replace(/<html.*?>/, "")
+      .replace(/<\/html>/, "")
+      .replace(/<body.*?>/, "")
+      .replace(/<\/body>/, "");
       const container=document.createElement("div");
-      container.innerHTML=html;
+      container.innerHTML=
+       `
+      <style>
+        * {
+          color: #000 !important;
+          opacity: 1 !important;
+          background: transparent !important;
+        }
+        body {
+          background: #ffffff !important;
+        }
+      </style>
+      <div style="padding:20px;width:800px;">
+      ${cleanHtml}
+      </div>
+      `;
       document.body.appendChild(container);   // 🔴 required for html2pdf to work
+      await new Promise(resolve=> setTimeout(resolve,500))
       await html2pdf()
         .set({
           margin:10,
           filename:"resume.pdf",
-          html2canvas:{scale:2},
-          jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}
+          html2canvas:{scale:1.5,useCORS:true},
+          jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},
+          pagebreak:{mode:['css','legacy']}
         })
         .from(container)
         .save();
