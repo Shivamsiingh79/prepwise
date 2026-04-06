@@ -5,34 +5,26 @@ async function generateInterviewReportController(req,res){
 
     
     try{
+    const resumeContent = await (new pdfParse.PDFParse(Uint8Array.from(req.file.buffer))).getText()
     const {selfDescription,jobDescription}=req.body;
 
-    let resumeText="";
-    if(req.file && req.file.buffer){
-         const data=await pdfParse(req.file.buffer);
-         resumeText=data.text;
+    
 
-         resumeText=resumeText
-            .replace(/\s+/g, '\n')
-            .replace(/\s+/g," ")
-            .trim();
-    }
-
-    if(!resumeText && !selfDescription){
+    if(!resumeContent && !selfDescription){
         return res.status(400).json({
             message:"Either resume or self-description is required to generate interview report"
         })
     }
 
     const interviewReportByAi=await generateInterviewReport({
-        resume:resumeText,
+        resume:resumeContent.text,
         selfDescription,
         jobDescription
     })
 
     const interviewReport = await interviewReportModel.create({
     user: req.user.id,
-    resume: resumeText,
+    resume: resumeContent.text,
     selfDescription,
     jobDescription,
 
